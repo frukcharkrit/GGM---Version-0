@@ -1,0 +1,242 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}Dashboard - GamingGearMatcher{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Profile Sidebar -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="rounded-circle"
+                            style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #007bff;">
+                        {% else %}
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <h4>{{ user.username }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <hr>
+                    <p><strong>Role:</strong> {{ user.role.role_name }}</p>
+                    <p><strong>Member since:</strong><br>{{ user.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Settings Menu -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cog"></i> Settings
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'edit_profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'manage_presets' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-folder"></i> My Presets
+                    </a>
+                    <a href="{% url 'user_profile' %}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <!-- Dashboard Overview Cards -->
+            <h3 class="mb-4"><i class="fas fa-chart-bar"></i> Dashboard Overview</h3>
+            
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-primary">
+                        <div class="card-body text-center">
+                            <i class="fas fa-folder fa-3x text-primary mb-2"></i>
+                            <h2 class="mb-0">{{ total_presets }}</h2>
+                            <p class="text-muted mb-0">Total Presets</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-3x text-success mb-2"></i>
+                            <h2 class="mb-0">{{ total_ratings }}</h2>
+                            <p class="text-muted mb-0">Total Ratings</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-info">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-week fa-3x text-info mb-2"></i>
+                            <h2 class="mb-0">{{ presets_last_7_days }}</h2>
+                            <p class="text-muted mb-0">Last 7 Days</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm border-warning">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-alt fa-3x text-warning mb-2"></i>
+                            <h2 class="mb-0">{{ presets_last_30_days }}</h2>
+                            <p class="text-muted mb-0">Last 30 Days</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Timeline Chart -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Preset Creation Timeline</h5>
+                </div>
+                <div class="card-body">
+                    {% if total_presets > 0 %}
+                    <canvas id="presetTimelineChart" style="max-height: 300px;"></canvas>
+                    {% else %}
+                    <p class="text-muted text-center py-5">No preset data yet. <a href="{% url 'upload_image' %}">Create your first preset!</a></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Activity Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-clock"></i> Latest Activity:</strong></p>
+                            {% if latest_preset %}
+                            <p class="text-muted">Created "{{ latest_preset.name }}" on {{ latest_preset.created_at|date:"M d, Y" }}</p>
+                            {% else %}
+                            <p class="text-muted">No presets created yet</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-star-half-alt"></i> Rating Breakdown:</strong></p>
+                            <p class="mb-1">
+                                <span class="badge bg-success">Good: {{ good_ratings }}</span>
+                                <span class="badge bg-warning text-dark">Neutral: {{ neutral_ratings }}</span>
+                                <span class="badge bg-danger">Bad: {{ bad_ratings }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Presets -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-folder-open"></i> Recent Presets</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_presets %}
+                    <div class="list-group">
+                        {% for preset in user_presets %}
+                        <a href="{% url 'preset_detail' preset.preset_id %}"
+                            class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ preset.name }}</h6>
+                                <small class="text-muted">{{ preset.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'manage_presets' %}" class="btn btn-primary mt-3">View All Presets</a>
+                    {% else %}
+                    <p class="text-muted">No presets yet. <a href="{% url 'upload_image' %}">Create your first
+                            preset!</a></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Ratings -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Recent Ratings</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_ratings %}
+                    <div class="list-group">
+                        {% for rating in user_ratings %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ rating.proplayer.name }}</h6>
+                                <small class="text-muted">{{ rating.rated_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">
+                                <span
+                                    class="badge {% if rating.feedback_score == 'Good' %}bg-success{% elif rating.feedback_score == 'Neutral' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ rating.feedback_score }}
+                                </span>
+                            </p>
+                            {% if rating.comment %}
+                            <small class="text-muted">{{ rating.comment|truncatewords:15 }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No ratings yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    {% if total_presets > 0 %}
+    // Preset Timeline Chart
+    const ctx = document.getElementById('presetTimelineChart').getContext('2d');
+    const chartLabels = {{ chart_labels_json|safe }};
+    const chartData = {{ chart_data_json|safe }};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Presets Created',
+                data: chartData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Monthly Preset Creation Activity'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

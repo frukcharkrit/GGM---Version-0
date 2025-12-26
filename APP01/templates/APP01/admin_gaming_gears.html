@@ -1,0 +1,108 @@
+{% extends 'APP01/admin_base.html' %}
+
+{% block admin_page_title %}Gaming Gears{% endblock %}
+
+{% block admin_content %}
+<style>
+    /* Force Light Theme for this page as requested */
+    .card {
+        background-color: #ffffff !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .table {
+        color: #000000 !important;
+    }
+
+    .table td {
+        color: #000000 !important;
+        border-top-color: #dee2e6 !important;
+    }
+
+    .table th {
+        border-bottom-color: #007bff !important;
+    }
+
+    /* Override global dark mode inputs */
+    .form-control {
+        background-color: #fff !important;
+        color: #000 !important;
+        border: 1px solid #ced4da !important;
+    }
+
+    .form-control::placeholder {
+        color: #6c757d !important;
+    }
+</style>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="input-group" style="max-width: 300px;">
+        <input type="text" class="form-control" placeholder="Search..." aria-label="Search" id="gearSearchInput">
+        <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+    </div>
+    <a href="{% url 'admin_add_gear' %}" class="btn btn-primary">Add Gaming Gear</a>
+</div>
+
+<div class="card p-3">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Brand</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gear in gaming_gears %}
+                <tr>
+                    <td>{{ gear.gear_id }}</td>
+                    <td>{{ gear.name }}</td>
+                    <td>{{ gear.type }}</td>
+                    <td>{{ gear.brand }}</td>
+                    <td>{{ gear.price|default:"N/A" }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit_gear' gear.gear_id %}" class="btn btn-sm btn-info me-2">Edit</a>
+                        <form action="{% url 'admin_delete_gear' gear.gear_id %}" method="post" class="d-inline"
+                            onsubmit="return confirm('Are you sure you want to delete {{ gear.name }}?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No Gaming Gears found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Simple client-side search for Gaming Gears (can be enhanced with AJAX for large datasets)
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('gearSearchInput');
+        const tableBody = document.querySelector('.table tbody');
+        const tableRows = tableBody.querySelectorAll('tr');
+
+        searchInput.addEventListener('keyup', function () {
+            const searchTerm = searchInput.value.toLowerCase();
+            tableRows.forEach(row => {
+                const nameCell = row.children[1] ? row.children[1].textContent.toLowerCase() : '';
+                const typeCell = row.children[2] ? row.children[2].textContent.toLowerCase() : '';
+                const brandCell = row.children[3] ? row.children[3].textContent.toLowerCase() : '';
+
+                if (nameCell.includes(searchTerm) || typeCell.includes(searchTerm) || brandCell.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

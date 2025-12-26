@@ -1,0 +1,369 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}Matching Result - GamingGearMatcher{% endblock %}
+
+{% block content %}
+<style>
+    /* === Custom CSS สำหรับหน้า Matching Result === */
+
+    /* การ์ดแสดงผล Pro Player */
+    .pro-player-card {
+        border: 1px solid #dee2e6;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+    }
+
+    .pro-player-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* รูป Pro Player (วงกลม) */
+    .pro-player-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid #f0f2f5;
+    }
+
+    /* รายการอุปกรณ์แต่ละชิ้น */
+    .gear-item-row {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ปุ่ม USE ALL */
+    .btn-use-all {
+        background-color: #4285F4;
+        color: white;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        padding: 5px 15px;
+        text-transform: uppercase;
+        font-weight: 700;
+        border: none;
+        letter-spacing: 0.5px;
+        transition: background-color 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-use-all:hover {
+        background-color: #3367d6;
+        color: white;
+        text-decoration: none;
+    }
+
+    /* ส่วนแสดงรูป User ฝั่งซ้าย */
+    .uploaded-section {
+        background-color: #8da4be;
+        /* สีเทาอมฟ้าตามดีไซน์ */
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 25px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /* Checkbox ตกแต่ง (Visual Only) */
+    .checkbox-group label {
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #495057;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #212529;
+        cursor: default;
+    }
+
+    /* Link Hover Effect */
+    .hover-underline:hover {
+        text-decoration: underline;
+        color: #4285F4 !important;
+    }
+
+    /* === ระบบดาว (Star Rating) Logic === */
+    .star-rating-wrapper {
+        display: inline-block;
+    }
+
+    .star-rating-form {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 2px;
+    }
+
+    .btn-star {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        padding: 0 4px;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+        line-height: 1;
+        color: transparent;
+        -webkit-text-stroke: 1px #adb5bd;
+    }
+
+    .btn-star:hover {
+        transform: scale(1.2);
+    }
+
+    .btn-star:hover,
+    .btn-star:hover~.btn-star {
+        color: #FFD700;
+        -webkit-text-stroke: 0px;
+        filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+    }
+
+    /* Scrollable container for Pro Players */
+    .pro-players-scroll-container {
+        max-height: 80vh;
+        /* ความสูงสูงสุด 80% ของหน้าจอ */
+        overflow-y: auto;
+        /* เปิด scroll แนวตั้ง */
+        padding-right: 10px;
+        /* เผื่อที่ให้ scrollbar */
+    }
+
+    /* Custom scrollbar styling */
+    .pro-players-scroll-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .pro-players-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .pro-players-scroll-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    .pro-players-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+
+        <div class="col-md-5">
+
+            <h5 class="mb-3 text-muted fw-bold">YOUR UPLOAD</h5>
+            <div class="uploaded-section shadow-sm">
+                {% if uploaded_image_url %}
+                <img src="{{ uploaded_image_url }}" alt="Uploaded image" class="img-fluid rounded"
+                    style="max-height: 350px; width:auto;">
+                {% else %}
+                <div class="text-white text-center">
+                    <i class="fas fa-camera fa-3x mb-3"></i><br>
+                    <span>No image uploaded</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row checkbox-group mb-4 px-2">
+                <div class="col-6">
+                    <div class="mb-3 d-flex align-items-center">
+                        <input type="checkbox" {% if 'Mouse' in selected_gears %}checked{% endif %} disabled>
+                        <label>MOUSE</label>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <input type="checkbox" {% if 'Headset' in selected_gears %}checked{% endif %} disabled>
+                        <label>HEADSET</label>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <input type="checkbox" {% if 'Chair' in selected_gears %}checked{% endif %} disabled>
+                        <label>CHAIR</label>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="mb-3 d-flex align-items-center">
+                        <input type="checkbox" {% if 'Keyboard' in selected_gears %}checked{% endif %} disabled>
+                        <label>KEYBOARD</label>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <input type="checkbox" {% if 'Monitor' in selected_gears %}checked{% endif %} disabled>
+                        <label>MONITOR</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="px-2 mb-4">
+                <h6 style="font-weight: 800; font-family: sans-serif; letter-spacing: 1px; color:#212529;">RATE OUR
+                    MATCHING:</h6>
+                <div class="mt-2 star-rating-wrapper">
+                    {% if not user.is_authenticated %}
+                    <p class="text-muted small">
+                        Please <a href="{% url 'login' %}?next={% url 'matching_result' %}"
+                            class="fw-bold text-decoration-none">Login</a> to rate result.
+                    </p>
+                    {% else %}
+                    <form method="post" action="{% url 'submit_rating' %}" class="star-rating-form">
+                        {% csrf_token %}
+                        <button type="submit" name="score" value="5" class="btn-star" title="5 - Excellent">★</button>
+                        <button type="submit" name="score" value="4" class="btn-star" title="4 - Good">★</button>
+                        <button type="submit" name="score" value="3" class="btn-star" title="3 - Average">★</button>
+                        <button type="submit" name="score" value="2" class="btn-star" title="2 - Poor">★</button>
+                        <button type="submit" name="score" value="1" class="btn-star" title="1 - Bad">★</button>
+                    </form>
+                    <p class="small text-muted mt-2 mb-0" style="font-size: 0.8rem;">
+                        <i class="fas fa-info-circle me-1"></i> Click a star to submit feedback
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-block mt-4">
+                <a class="btn btn-secondary" href="{% url 'upload_image' %}">
+                    <i class="fas fa-redo me-1"></i> Try Another Image
+                </a>
+                <a class="btn btn-outline-dark" href="{% url 'home_guest' %}">Back to Home</a>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <h4 class="mb-4 mt-4 mt-md-0" style="font-weight: 800; font-family: sans-serif; color:#212529;">
+                PRO PLAYER MATCHED WITH YOU
+            </h4>
+
+            {% if matched_player %}
+            <div class="pro-player-card d-flex flex-column flex-sm-row align-items-start">
+
+                <div class="me-sm-4 mb-3 mb-sm-0 text-center mx-auto mx-sm-0">
+                    <a href="{% url 'pro_player_detail' matched_player.player_id %}" class="text-decoration-none">
+                        {% if matched_player.image %}
+                        <img src="{{ matched_player.image.url }}" alt="{{ matched_player.name }}"
+                            class="pro-player-img shadow-sm">
+                        {% else %}
+                        <img src="https://via.placeholder.com/100?text=Pro" class="pro-player-img shadow-sm">
+                        {% endif %}
+                    </a>
+
+                    <div class="mt-2 badge bg-light text-dark border">
+                        MATCHED
+                    </div>
+                </div>
+
+                <div class="flex-grow-1 w-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <a href="{% url 'pro_player_detail' matched_player.player_id %}"
+                            class="text-decoration-none text-dark">
+                            <h4 class="m-0 fw-bold hover-underline">
+                                {{ matched_player.name|upper }}
+                                <i class="fas fa-external-link-alt fa-xs text-muted ms-2"></i>
+                            </h4>
+                        </a>
+
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'use_all_gears' matched_player.player_id %}" class="btn-use-all shadow-sm">
+                            <i class="fas fa-save me-1"></i> USE ALL
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}?next={% url 'matching_result' %}" class="btn-use-all shadow-sm"
+                            style="background-color: #6c757d;">
+                            LOGIN TO SAVE
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if matched_player.bio %}
+                    <p class="small text-muted mb-3">{{ matched_player.bio|truncatechars:120 }}</p>
+                    {% endif %}
+
+                    <div class="gear-list">
+                        {% for gear in matched_gears %}
+                        <div class="gear-item-row">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-white rounded p-1 border"
+                                    style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center;">
+                                    {% if gear.image_url %}
+                                    <img src="{{ gear.image_url }}" style="max-width:100%; max-height:100%;">
+                                    {% else %}
+                                    <i class="fas fa-gamepad text-muted"></i>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    <small class="text-muted d-block fw-bold"
+                                        style="font-size: 0.7rem; text-transform:uppercase;">
+                                        {{ gear.category|default:"GEAR" }}
+                                    </small>
+                                    <span class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                        {{ gear.name }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                {% if gear.gear_id in temp_preset_ids %}
+                                <a href="{% url 'edit_temp_preset_with_id' 'remove' gear.gear_id %}"
+                                    class="btn btn-sm text-danger fw-bold" title="Remove">
+                                    <i class="fas fa-minus-circle"></i> REMOVE
+                                </a>
+                                {% else %}
+                                <a href="{% url 'edit_temp_preset_with_id' 'add' gear.gear_id %}"
+                                    class="btn btn-sm text-success fw-bold" title="Add">
+                                    <i class="fas fa-plus-circle"></i> ADD
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-2 text-muted bg-light rounded">
+                            <small>No gear information available.</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-warning border-0 shadow-sm" role="alert">
+                <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> No Match Found!</h4>
+                <p>We couldn't find a pro player matching your physique.</p>
+                <hr>
+                <p class="mb-0 small">Please try uploading a clearer image with a straight-facing pose.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Next Button for Manual Equipment Flow -->
+{% if user.is_authenticated and temp_preset_ids %}
+<div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <a href="{% url 'save_preset' %}" class="btn btn-primary btn-lg shadow-lg"
+        style="border-radius: 50px; padding: 15px 30px; font-weight: 700;">
+        Next <i class="fas fa-arrow-right ms-2"></i>
+    </a>
+</div>
+{% endif %}
+{% endblock %}

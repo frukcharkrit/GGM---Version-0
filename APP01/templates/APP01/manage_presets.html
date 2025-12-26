@@ -1,0 +1,135 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}My Saved Presets{% endblock %}
+
+{% block content %}
+<style>
+    .preset-header {
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        color: #007bff; /* สีน้ำเงินสำหรับ Header */
+    }
+    .preset-card {
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        
+        /* จัด Layout สำหรับปุ่ม Delete */
+        display: flex; 
+        align-items: center;
+        justify-content: space-between;
+    }
+    .preset-card:hover {
+        background: #e9ecef;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .preset-info {
+        flex-grow: 1; /* ทำให้ข้อมูล Preset ใช้พื้นที่ส่วนใหญ่ */
+        text-decoration: none;
+        color: #333;
+        display: block;
+    }
+    .preset-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    .gear-count {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    .date-text {
+        font-size: 0.8rem;
+        color: #999;
+    }
+    .no-presets {
+        border: 2px dashed #ccc;
+        padding: 50px;
+        border-radius: 10px;
+        text-align: center;
+        color: #888;
+    }
+    .delete-btn-group {
+        margin-left: 20px;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <h1 class="preset-header"><i class="fas fa-save me-3 text-primary"></i>MY SAVED PRESETS</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if presets %}
+        <div class="row">
+            {% for preset in presets %}
+                <div class="col-md-6">
+                    <div class="preset-card">
+                        <a href="{% url 'preset_detail' preset_id=preset.preset_id %}" class="preset-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="preset-title">{{ preset.name }}</span>
+                                <span class="date-text">Saved: {{ preset.created_at|date:"d M Y" }}</span>
+                            </div>
+                            <div class="gear-count">
+                                {{ preset.presetgear_set.count }} Gears in this Preset
+                            </div>
+                        </a>
+                        
+                        <div class="delete-btn-group">
+                            <button 
+                                class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDelete('{{ preset.name }}', '{% url 'delete_preset' preset_id=preset.preset_id %}')">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-presets">
+            <i class="fas fa-box-open fa-3x mb-3"></i>
+            <h3>You haven't saved any presets yet.</h3>
+            <p>Go to the Matching Result page to select gears and save your first preset!</p>
+            <a href="{% url 'matching_result' %}" class="btn btn-primary mt-3">Start Matching</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function confirmDelete(presetName, deleteUrl) {
+        if (confirm(`คุณแน่ใจหรือไม่ที่จะลบ Preset "${presetName}"? การกระทำนี้ไม่สามารถยกเลิกได้`)) {
+            // สร้าง Form ชั่วคราวเพื่อส่ง POST Request (จำเป็นสำหรับ Django Security)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = deleteUrl;
+
+            // เพิ่ม CSRF Token (สำคัญมาก)
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            // ต้องแน่ใจว่า base.html หรือ template นี้มี {% csrf_token %} เพื่อให้ค่านี้ถูก Render
+            // หรือถ้ามั่นใจว่ามีใน base.html แล้ว สามารถใช้ค่าจาก DOM ได้
+            // แต่เพื่อความปลอดภัย เราจะใช้ค่าที่ถูก Render มาในแม่แบบ
+            csrfInput.value = '{{ csrf_token }}'; 
+
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+{% endblock %}

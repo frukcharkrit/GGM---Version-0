@@ -1,0 +1,261 @@
+{% extends 'APP01/base.html' %}
+{% load static %}
+
+{% block title %}Save Preset - Gaming Gear Matcher{% endblock %}
+
+{% block content %}
+<style>
+    /* ... (CSS Styles เดิมทั้งหมด) ... */
+    .btn-back-to-match {
+        background-color: #5bc0de;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 30px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-decoration: none;
+        transition: 0.2s;
+        box-shadow: 0 2px 4px rgba(91, 192, 222, 0.4);
+        display: inline-block;
+    }
+
+    .btn-back-to-match:hover {
+        background-color: #31b0d5;
+        color: white;
+    }
+
+    .gear-save-card {
+        border: 1px solid #333;
+        border-radius: 20px;
+        background: white;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .gear-img-box {
+        width: 120px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-right: 1px solid #eee;
+        padding-right: 15px;
+    }
+
+    .gear-img-save {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .gear-info-box {
+        flex-grow: 1;
+        padding: 0 20px;
+    }
+
+    .pro-img-box {
+        width: 80px;
+        height: 80px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-right: 20px;
+    }
+
+    .pro-img-save {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .btn-remove-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #dc3545;
+        color: #dc3545;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-remove-circle:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .text-bar {
+        height: 15px;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        margin-top: 8px;
+        width: 100%;
+    }
+
+    .preset-title-input {
+        /* CSS สำหรับ input field ชื่อ Preset */
+        border: none;
+        border-bottom: 2px solid #333;
+        font-size: 2.5rem;
+        font-weight: 800;
+        width: 100%;
+        padding: 5px;
+        margin-bottom: 30px;
+        background: transparent;
+    }
+
+    .preset-title-input:focus {
+        outline: none;
+        border-color: #4285F4;
+    }
+
+    .btn-save-big {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 40px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .btn-share-big {
+        background-color: #4285F4;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 40px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        width: 100%;
+        max-width: 300px;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'matching_result' %}" class="btn-back-to-match">
+                <i class="fas fa-undo me-2"></i> BACK TO MATCH
+            </a>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {# 🚨 FIX 1: เพิ่ม Hidden Field สำหรับส่ง ID อุปกรณ์ที่เลือกไป Save View #}
+        <input type="hidden" name="gears_to_save" value="{{ gear_ids_string }}">
+
+        <div class="row mb-4">
+            <div class="col-12">
+                {# ส่วนที่แก้ไข: ใช้ {{ form.name }} เพื่อ Render field และตั้งค่าผ่าน attribute #}
+
+                {{ form.name }}
+
+                <script>
+                    // ใช้ JavaScript เพื่อเพิ่ม Class และ Placeholder ที่กำหนดเอง
+                    const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+                    if (nameInput) {
+                        nameInput.classList.add('preset-title-input');
+                        nameInput.setAttribute('placeholder', 'Enter Preset Name');
+                        // ไม่จำเป็นต้องกำหนด value ตรงนี้ ถ้า Django Form ถูกสร้างอย่างถูกต้อง
+                    }
+                </script>
+
+                {% if form.name.errors %}
+                <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            {% for gear in display_gears %}
+            <div class="col-md-6">
+                <div class="gear-save-card">
+                    <a href="{% url 'gear_detail' gear.gear_id %}" class="text-decoration-none" target="_blank">
+                        <div class="gear-img-box">
+                            {% if gear.image_url %}
+                            <img src="{{ gear.image_url }}" alt="{{ gear.name }}" class="gear-img-save">
+                            {% else %}
+                            <img src="https://via.placeholder.com/100?text={{ gear.category|slice:" :1" }}"
+                                class="gear-img-save">
+                            {% endif %}
+                        </div>
+                    </a>
+
+                    <a href="{% url 'gear_detail' gear.gear_id %}" class="gear-info-box text-decoration-none"
+                        target="_blank">
+                        <div class="fw-bold text-uppercase small text-dark">{{ gear.name }}</div>
+                        <div class="text-muted small">{{ gear.category|default:"Gear" }}</div>
+                        <div class="text-bar" style="width: 80%;"></div>
+                        <div class="text-bar" style="width: 60%;"></div>
+                    </a>
+
+                    {# 🚨 FIX 2: ใช้ gear.gear_id ที่ตรงกับ Model field ID #}
+                    {% if gear.gear_id %}
+                    <a href="{% url 'edit_temp_preset_with_id' 'remove' gear.gear_id %}?next={{ request.path }}"
+                        class="btn-remove-circle">
+                        <i class="fas fa-minus"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                <h3 class="text-muted">No gears selected.</h3>
+                <p>กรุณากลับไปหน้าผลลัพธ์การจับคู่เพื่อเลือกอุปกรณ์ที่คุณต้องการบันทึก</p>
+                <a href="{% url 'matching_result' %}" class="btn btn-outline-primary mt-3"><i
+                        class="fas fa-reply me-2"></i> Go back to select gears</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if display_gears %}
+        <div class="row mt-5 justify-content-center">
+            <div class="col-md-5 text-center mb-3">
+                <button type="submit" class="btn-save-big">
+                    SAVE PRESET <i class="fas fa-check ms-2"></i>
+                </button>
+            </div>
+            <div class="col-md-5 text-center mb-3">
+                <button type="button" class="btn-share-big"
+                    onclick="alert('Please save the preset first before sharing!');">
+                    SHARE PRESET <i class="fas fa-share-alt ms-2"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+    </form>
+</div>
+{% endblock %}

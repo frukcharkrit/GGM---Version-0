@@ -1,0 +1,54 @@
+.preset-title {
+    font-weight: 800;
+    font-size: 3rem;
+    color: #007bff; /* Primary color */
+    margin-bottom: 5px;
+}
+/* ✅ นี่คือส่วนที่กำหนดกรอบและเงา ตรวจสอบว่ามีครบถ้วน */
+.gear-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;         /* <-- กรอบสีเทาบางๆ */
+    border-left: 5px solid #007bff;    /* <-- แถบสีน้ำเงินด้านซ้าย */
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* <-- เงา */
+    display: flex;
+    align-items: center;
+}
+.gear-icon {
+    font-size: 2rem;
+    color: #007bff;
+    margin-right: 20px;
+    width: 40px;
+    text-align: center;
+}
+.gear-info h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: #333;
+}
+.gear-info p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+.list-header {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    color: #333;
+}
+/* Style สำหรับปุ่ม Share */
+.btn-share {
+    background-color: #4285F4;
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+    margin-right: 10px; 
+}
+.btn-share:hover {
+    background-color: #3367d6;
+    color: white;
+}

@@ -1,0 +1,15 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}Member Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron mt-5 text-center">
+    <h1 class="display-4">Welcome Back, {{ user.username }}!</h1>
+    <p class="lead">This is your member dashboard. Explore your presets or start a new match.</p>
+    <hr class="my-4">
+    <p class="lead">
+        <a class="btn btn-info btn-lg me-2" href="{% url 'manage_presets' %}" role="button">My Presets</a>
+        <a class="btn btn-success btn-lg" href="{% url 'upload_image' %}" role="button">New Match</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'APP01/admin_base.html' %}
+
+{% block admin_content %}
+<div class="card p-4">
+    <h3 class="mb-4 text-white">Dashboard</h3>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="card-text fs-2 fw-bold">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pro Players</h5>
+                    <p class="card-text fs-2 fw-bold">{{ total_pro_players }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Gears</h5>
+                    <p class="card-text fs-2 fw-bold">{{ total_gears }}</p>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="col-md-3 mb-4"> -->
+        <!-- <div class="card bg-primary text-white h-100"> -->
+        <!-- <div class="card-body"> -->
+        <!-- <h5 class="card-title">Total Presets</h5> -->
+        <!-- <p class="card-text fs-2 fw-bold">{{ total_presets }}</p> -->
+        <!-- </div> -->
+        <!-- </div> -->
+        <!-- </div> -->
+    </div>
+
+    <!-- Analytics Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card p-4">
+                <h4 class="text-white mb-3">Activity Overview (Last 30 Days)</h4>
+                <div style="height: 400px;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Safe Data Transfer using json_script -->
+    {{ chart_labels|json_script:"chart-labels-data" }}
+    {{ chart_user_data|json_script:"chart-user-data" }}
+    {{ chart_preset_data|json_script:"chart-preset-data" }}
+
+    <!-- Chart.js (UMD version for standard script tag) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                // Determine theme (simple check or default to dark/light)
+                // Assuming Dark theme based on admin design
+                const textColor = '#e0e0e0';
+                const gridColor = '#444';
+
+                // Parse Data from JSON Scripts
+                const labels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+                const userData = JSON.parse(document.getElementById('chart-user-data').textContent);
+                const presetData = JSON.parse(document.getElementById('chart-preset-data').textContent);
+
+                const ctx = document.getElementById('activityChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'New Users',
+                                data: userData,
+                                borderColor: '#0d6efd', // Bootstrap Primary Blue
+                                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Presets Created',
+                                data: presetData,
+                                borderColor: '#198754', // Bootstrap Success Green
+                                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: textColor
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: gridColor
+                                },
+                                ticks: {
+                                    color: textColor,
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: gridColor
+                                },
+                                ticks: {
+                                    color: textColor
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Chart Render Error:", error);
+            }
+        });
+    </script>
+    <!-- <h4 class="text-white">การแจ้งเตือนที่ยังไม่อ่าน ({{ unread_alerts|length }})</h4> -->
+    <!-- {% if unread_alerts %} -->
+    <!-- <ul class="list-group"> -->
+    <!-- {% for alert in unread_alerts %} -->
+    <!-- <li class="list-group-item bg-dark text-white border-secondary"> -->
+    <!-- <p class="mb-0">{{ alert.message }}</p> -->
+    <!-- <small class="text-muted">เมื่อ {{ alert.created_at|date:"F j, Y, P" }}</small> -->
+    <!-- </li> -->
+    <!-- {% endfor %} -->
+    <!-- </ul> -->
+    <!-- {% else %} -->
+    <!-- <p class="text-muted">ไม่มีการแจ้งเตือนที่ยังไม่อ่าน</p> -->
+    <!-- {% endif %} -->
+    <!-- </div> -->
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+django
+reportlab
+ipython
+faker
+pyaml
+pillow
+tailwind
+django-tailwind
+django-browser-reload
+opencv-python-headless
+numpy
+scikit-learn
+tensorflow
+kerasdjango-allauth==65.13.1
+PyJWT==2.10.1
+cryptography==46.0.3

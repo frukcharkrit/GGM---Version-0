@@ -1,0 +1,263 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}{{ pro_player.name }} - Detail{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom Styles ให้เหมือน Design Detail */
+    .detail-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .player-img-large {
+        width: 100%;
+        max-width: 200px;
+        height: 200px;
+        border-radius: 15px;
+        object-fit: cover;
+        border: 1px solid #eee;
+    }
+    .game-logo {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+    }
+    
+    /* ปุ่ม USE ALL */
+    .badge-use-all {
+        background-color: #4285F4;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        vertical-align: middle;
+        margin-left: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        transition: background-color 0.2s;
+    }
+    .badge-use-all:hover {
+        background-color: #3367d6;
+        color: white;
+    }
+
+    .bio-placeholder-line {
+        height: 12px;
+        background-color: #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+    
+    /* Gear Grid Card */
+    .gear-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 15px;
+        padding: 15px;
+        background: white;
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        height: 100%; /* Equal height columns */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: 0.2s;
+        position: relative;
+    }
+    .gear-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border-color: #ccc;
+    }
+    .gear-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        margin-right: 15px;
+    }
+    
+    /* Add/Remove Buttons on Card */
+    .btn-add-gear {
+        background-color: #2ecc71; /* สีเขียว */
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 5px 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        transition: 0.2s;
+        text-decoration: none;
+        box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
+    }
+    .btn-add-gear:hover {
+        background-color: #27ae60;
+        color: white;
+        transform: scale(1.05);
+    }
+    .btn-remove-gear {
+        background-color: #e74c3c; /* สีแดง */
+        color: white;
+        box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+    }
+    .btn-remove-gear:hover {
+        background-color: #c0392b;
+        color: white;
+    }
+    
+    /* Done Button (Bottom) */
+    .btn-done {
+        background-color: #f0ad4e; /* สีส้ม */
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 50px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        float: right;
+        transition: 0.2s;
+    }
+    .btn-done:hover {
+        background-color: #ec971f;
+        color: white;
+        text-decoration: none;
+    }
+
+    /* === NEW BUTTON: BACK TO MATCH (Top) === */
+    .btn-back-to-match {
+        background-color: #5bc0de; /* สีฟ้าอ่อน */
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 30px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-decoration: none;
+        transition: 0.2s;
+        box-shadow: 0 2px 4px rgba(91, 192, 222, 0.4);
+        display: inline-block;
+    }
+    .btn-back-to-match:hover {
+        background-color: #31b0d5;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'matching_result' %}" class="btn-back-to-match">
+                <i class="fas fa-undo me-2"></i> BACK TO MATCH
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="detail-card d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
+                <div class="me-sm-4 mb-3 mb-sm-0">
+                    {% if pro_player.image_url %}
+                        <img src="{{ pro_player.image_url }}" alt="{{ pro_player.name }}" class="player-img-large">
+                    {% else %}
+                        <img src="https://via.placeholder.com/200" class="player-img-large">
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <h2 class="fw-bold text-uppercase mb-2">
+                        {{ pro_player.name }} 
+                        
+                        {% if is_member %}
+                            <a href="{% url 'use_all_gears' pro_player.player_id %}" class="badge-use-all">USE ALL</a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="badge-use-all" style="background-color:#999">LOGIN TO USE</a>
+                        {% endif %}
+                        </h2>
+                    
+                    <h5 class="text-primary mb-3">{{ pro_player.game|default:"E-Sports Athlete" }}</h5>
+
+                    {% if pro_player.bio %}
+                        <p class="text-muted">{{ pro_player.bio }}</p>
+                    {% else %}
+                        <div class="bio-placeholder-line" style="width: 90%;"></div>
+                        <div class="bio-placeholder-line" style="width: 80%;"></div>
+                        <div class="bio-placeholder-line" style="width: 60%;"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="detail-card text-center d-flex flex-column justify-content-center h-100" style="min-height: 200px;">
+                {% if pro_player.game_logo %}
+                    <img src="{{ pro_player.game_logo }}" alt="Game Logo" class="game-logo mb-2">
+                {% else %}
+                     <i class="fas fa-gamepad fa-4x text-muted mb-2"></i>
+                {% endif %}
+                <h6 class="fw-bold mt-2 text-uppercase text-muted" style="letter-spacing: 1px;">Game Title</h6>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="fw-bold mt-4 mb-3">PLAYER'S GEARS</h4>
+    <div class="row">
+        {% for gear in pro_player_gears %}
+            <div class="col-md-6 mb-3"> <div class="gear-card position-relative">
+                    <div class="me-3 text-center" style="min-width: 80px;">
+                        <a href="{% url 'gear_detail' gear.gear_id %}">
+                            {% if gear.image_url %}
+                                <img src="{{ gear.image_url }}" alt="{{ gear.name }}" class="gear-img">
+                            {% else %}
+                                <img src="https://via.placeholder.com/80" class="gear-img">
+                            {% endif %}
+                        </a>
+                    </div>
+
+                    <div class="flex-grow-1 pe-5">
+                        <a href="{% url 'gear_detail' gear.gear_id %}" class="text-decoration-none text-dark">
+                            <h6 class="fw-bold text-uppercase m-0">{{ gear.name }}</h6>
+                        </a>
+                        <small class="text-muted fw-bold" style="font-size: 0.75rem;">{{ gear.category|default:"GAMING GEAR" }}</small>
+                        
+                        <div class="mt-2">
+                            {% if gear.description %}
+                                <p class="small text-muted mb-0">{{ gear.description|truncatechars:60 }}</p>
+                            {% else %}
+                                <div class="bio-placeholder-line" style="height: 6px; width: 80%; background-color:#f0f0f0;"></div>
+                                <div class="bio-placeholder-line" style="height: 6px; width: 50%; background-color:#f0f0f0;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="position-absolute top-0 end-0 mt-3 me-3">
+                        {% if gear.gear_id in temp_preset_ids %}
+                             <a href="{% url 'edit_temp_preset_with_id' 'remove' gear.gear_id %}?next={{ request.path }}" class="btn-add-gear btn-remove-gear text-decoration-none">
+                                 REMOVE
+                             </a>
+                        {% else %}
+                             <a href="{% url 'edit_temp_preset_with_id' 'add' gear.gear_id %}?next={{ request.path }}" class="btn-add-gear text-decoration-none">
+                                 ADD
+                             </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+                <p>No gear information available for this player.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-3 mb-5">
+        <div class="col-12">
+            <a href="{% url 'save_preset' %}" class="btn btn-done text-decoration-none shadow-sm">Done</a>
+        </div>
+    </div>
+    </div>
+{% endblock %}

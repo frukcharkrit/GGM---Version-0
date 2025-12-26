@@ -1,0 +1,85 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}Search Results - GamingGearMatcher{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Search Results{% if query %} for "{{ query }}"{% endif %}</h2>
+
+    {% if not query %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Please enter a search query.
+    </div>
+    {% else %}
+
+    <!-- Pro Players Section -->
+    <section class="mb-5">
+        <h3 class="mb-3"><i class="fas fa-user-friends"></i> Pro Players</h3>
+        {% if pro_players %}
+        <div class="row">
+            {% for player in pro_players %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if player.image %}
+                    <img src="{{ player.image.url }}" class="card-img-top" alt="{{ player.name }}"
+                        style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center"
+                        style="height: 200px;">
+                        <i class="fas fa-user fa-4x"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ player.name }}</h5>
+                        <p class="card-text text-muted">{{ player.game }}</p>
+                        <p class="card-text">{{ player.bio|truncatewords:20 }}</p>
+                        <a href="{% url 'pro_player_detail' player.player_id %}" class="btn btn-primary">View
+                            Profile</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No Pro Players found.
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Gaming Gear Section -->
+    <section class="mb-5">
+        <h3 class="mb-3"><i class="fas fa-gamepad"></i> Gaming Gear</h3>
+        {% if gears %}
+        <div class="row">
+            {% for gear in gears %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if gear.image %}
+                    <img src="{{ gear.image.url }}" class="card-img-top" alt="{{ gear.name }}"
+                        style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light text-secondary d-flex align-items-center justify-content-center"
+                        style="height: 200px;">
+                        <i class="fas fa-mouse fa-4x"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ gear.name }}</h5>
+                        <p class="card-text text-muted">{{ gear.type }} - {{ gear.brand }}</p>
+                        <a href="{% url 'gear_detail' gear.gear_id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No Gaming Gear found.
+        </div>
+        {% endif %}
+    </section>
+
+    {% endif %}
+</div>
+{% endblock %}

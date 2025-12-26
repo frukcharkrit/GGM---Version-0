@@ -1,0 +1,173 @@
+{% extends 'APP01/base.html' %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4">
+                <h2 class="card-title text-center mb-4">Log In</h2>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    {# ฟิลด์ Username #}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label fw-bold">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# ฟิลด์ Password #}
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">Password</label>
+                        <div class="input-group">
+                            {{ form.password }}
+                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                <i class="bi bi-eye"></i> {# ไอคอนตา #}
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Log In</button>
+                    </div>
+                </form>
+
+                {# Google Sign-In Section - Only show if configured #}
+                {% load socialaccount %}
+                {% get_providers as socialaccount_providers %}
+                {% if socialaccount_providers %}
+                <div class="text-center my-3">
+                    <div class="divider">
+                        <span class="divider-text">OR</span>
+                    </div>
+                </div>
+
+                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="fab fa-google me-2"></i> Sign in with Google
+                </a>
+                {% endif %}
+
+                <p class="text-center mt-3 mb-0">
+                    Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+                </p>
+                <p class="text-center mt-2 mb-0">
+                    <a href="{% url 'account_reset_password' %}" class="text-muted">Forgot Password?</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .divider-text {
+        padding: 0 10px;
+        color: #999;
+        font-size: 14px;
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    // เพิ่ม Bootstrap Classes ให้กับ Input Fields และฟังก์ชัน Toggle Password
+    document.addEventListener('DOMContentLoaded', function () {
+        const usernameField = document.querySelector('form #id_username');
+        const passwordField = document.querySelector('form #id_password');
+        const togglePasswordButton = document.getElementById('togglePassword');
+
+        if (usernameField) {
+            usernameField.classList.add('form-control');
+        }
+        if (passwordField) {
+            passwordField.classList.add('form-control');
+        }
+
+        if (togglePasswordButton && passwordField) {
+            togglePasswordButton.addEventListener('click', function () {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                // เปลี่ยนไอคอนตา
+                this.querySelector('i').classList.toggle('bi-eye');
+                this.querySelector('i').classList.toggle('bi-eye-slash');
+            });
+        }
+    });
+</script>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ตรวจสอบ Messages จาก Django
+        {% if messages %}
+        {% for message in messages %}
+        var msgText = "{{ message|escapejs }}";
+        var msgTag = "{{ message.tags }}";
+
+        // ถ้าข้อความเป็นเรื่องการแบน (เช็คจาก Keyword) ให้เด้ง Popup
+        if (msgText.includes("ระงับการใช้งาน") || msgText.includes("BANNED") || msgText.includes("banned")) {
+            Swal.fire({
+                icon: 'error',
+                title: 'บัญชีถูกระงับ',
+                text: msgText,
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#d33'
+            });
+        }
+        // ถ้าเป็น Success ให้เด้ง (Optional) หรือจะใช้แบบเดิมก็ได้
+        // else if (msgTag.includes('success')) {
+        //      Swal.fire({
+        //         icon: 'success',
+        //         title: 'สำเร็จ',
+        //         text: msgText,
+        //         timer: 2000,
+        //         showConfirmButton: false
+        //     });
+        // }
+        {% endfor %}
+        {% endif %}
+    });
+</script>
+{% endblock %}

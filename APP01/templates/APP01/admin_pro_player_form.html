@@ -1,0 +1,49 @@
+{% extends 'APP01/admin_base.html' %}
+
+{% block admin_page_title %}{{ form_title }}{% endblock %}
+
+{% block admin_content %}
+<div class="card p-4">
+    <h3 class="mb-4 text-white">{{ form_title }}</h3>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label text-white">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text text-muted">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Save</button>
+        <a href="{% url 'admin_pro_players' %}" class="btn btn-secondary mt-3 ms-2">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // เพิ่ม Bootstrap classes ให้กับฟิลด์ฟอร์มที่ไม่ได้เป็น checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form input:not([type="checkbox"]), form select, form textarea').forEach(function(element) {
+            element.classList.add('form-control');
+        });
+        // สำหรับ CheckboxSelectMultiple
+        document.querySelectorAll('ul.checkbox-select-multiple li input[type="checkbox"]').forEach(function(checkbox) {
+            checkbox.classList.add('form-check-input');
+        });
+        document.querySelectorAll('ul.checkbox-select-multiple li').forEach(function(li) {
+            li.classList.add('form-check');
+        });
+        document.querySelectorAll('ul.checkbox-select-multiple li label').forEach(function(label) {
+            label.classList.add('form-check-label');
+        });
+    });
+</script>
+{% endblock %}

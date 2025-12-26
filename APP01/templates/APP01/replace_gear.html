@@ -1,0 +1,102 @@
+{% extends 'APP01/base.html' %}
+{% load static %}
+
+{% block title %}Replace Gear - {{ preset.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .gear-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .gear-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #28a745;
+        transform: translateY(-2px);
+    }
+
+    .gear-image-box {
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .gear-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <h1 class="mb-4">
+        <i class="fas fa-exchange-alt me-2"></i>
+        Replace Gear in {{ preset.name }}
+    </h1>
+
+    <div class="alert alert-info">
+        <strong>Currently selected:</strong> {{ old_gear.name }} ({{ old_gear.gear_type }})
+        <br>
+        <strong>Choose a replacement:</strong> Same type only
+    </div>
+
+    {% if available_gears %}
+    <div class="row">
+        {% for gear in available_gears %}
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'confirm_replace' preset.preset_id old_gear.gear_id gear.gear_id %}"
+                class="text-decoration-none">
+                <div class="gear-card p-3">
+                    <div class="text-center">
+                        <div class="gear-image-box mx-auto mb-3">
+                            {% if gear.image %}
+                            <img src="{{ gear.image.url }}" alt="{{ gear.name }}" class="gear-img">
+                            {% else %}
+                            <img src="https://via.placeholder.com/120?text={{ gear.gear_type|slice:" :1" }}"
+                                class="gear-img">
+                            {% endif %}
+                        </div>
+                        <h5 class="text-dark">{{ gear.name }}</h5>
+                        <p class="text-muted small mb-1">
+                            <span class="badge bg-secondary">{{ gear.gear_type }}</span>
+                        </p>
+                        <p class="text-muted small mb-0">Brand: {{ gear.brand }}</p>
+                        {% if gear.price %}
+                        <p class="text-success mb-0">${{ gear.price }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <span class="btn btn-sm btn-success w-100">
+                            <i class="fas fa-check me-1"></i>Select This Gear
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        No other {{ old_gear.gear_type }} gears are available for replacement.
+        <br>
+        <small>All gears of this type are either already in your preset or don't exist in the database.</small>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'preset_detail' preset.preset_id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Cancel
+        </a>
+    </div>
+</div>
+{% endblock %}
